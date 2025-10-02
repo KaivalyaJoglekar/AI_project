@@ -1,0 +1,15 @@
+import React from 'react';
+
+const StartMenu = ({ onPlay, onInstructions }) => (
+  <div className="glass-container">
+    <h1 className="title">F1 Maze Race</h1>
+    <button className="glass-button" onClick={onPlay}>
+      Start Race
+    </button>
+    <button className="glass-button" onClick={onInstructions}>
+      Instructions
+    </button>
+  </div>
+);
+
+export default StartMenu;

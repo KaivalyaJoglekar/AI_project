@@ -1,6 +1,6 @@
 /* --- Base and Font --- */
-body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-color: #000; overflow: hidden; user-select: none; }
-#root { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; position: relative; }
+body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-color: #000; overflow-x: hidden; user-select: none; }
+#root { width: 100vw; min-height: 100vh; display: flex; justify-content: center; align-items: center; position: relative; }
 
 /* --- Animated Background Component Styles --- */
 .animated-background { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; }
@@ -17,7 +17,7 @@ body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-c
 .title { font-size: 3rem; font-weight: 700; margin-bottom: 25px; letter-spacing: 2px; text-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
 .glass-button { font-size: 1.1rem; font-weight: 600; padding: 12px 25px; width: 250px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; background: rgba(255, 255, 255, 0.1); color: white; cursor: pointer; transition: all 0.2s ease-in-out; margin-top: 15px; }
 .glass-button:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
-.game-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 0.5s ease-in-out; }
+.game-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; animation: fadeIn 0.5s ease-in-out; padding: 20px 0; }
 @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
 /* --- NEW & IMPROVED: Player Setup Form Styles --- */
@@ -83,6 +83,12 @@ body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-c
 
 /* --- Board & Game styles (Unchanged) --- */
 .game-layout { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.game-header { display: flex; align-items: center; justify-content: center; position: relative; width: 100%; margin-bottom: 10px; }
+.back-btn { position: absolute; left: 0; font-size: 0.9rem; font-weight: 600; padding: 10px 20px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: white; cursor: pointer; transition: all 0.2s ease-in-out; }
+.back-btn:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+.bot-legend { display: flex; justify-content: center; gap: 30px; margin-top: 20px; padding: 15px 25px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; backdrop-filter: blur(10px); }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500; }
+.legend-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.7); box-shadow: 0 0 6px rgba(0, 0, 0, 0.8); }
 .board { display: grid; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 5px; background-color: #111; box-shadow: 0 0 25px rgba(0, 0, 0, 0.5); }
 .cell { position: relative; }
 .cell-wall { background-color: #1a1a1a; } .cell-path { background-color: #666; } .cell-start { background-color: #28a745; } .cell-finish { background-color: #dc3545; }

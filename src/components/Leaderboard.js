@@ -9,6 +9,7 @@ export default function Leaderboard({ results, onPlayAgain, onMenu }) {
           <tr>
             <th>Pos</th>
             <th>Racer</th>
+            <th>Steps</th>
             <th>Time</th>
           </tr>
         </thead>
@@ -17,7 +18,8 @@ export default function Leaderboard({ results, onPlayAgain, onMenu }) {
             <tr key={result.name}>
               <td>{result.rank}</td>
               <td style={{ color: result.color || 'gold' }}>{result.name}</td>
-              <td>{result.time} turns</td>
+              <td>{result.steps}</td>
+              <td>{result.time}s</td>
             </tr>
           ))}
         </tbody>

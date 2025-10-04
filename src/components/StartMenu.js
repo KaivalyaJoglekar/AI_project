@@ -6,9 +6,7 @@ const StartMenu = ({ onPlay, onInstructions }) => (
     <button className="glass-button" onClick={onPlay}>
       Start Race
     </button>
-    <button className="glass-button" onClick={onInstructions}>
-      Instructions
-    </button>
+   
   </div>
 );
 

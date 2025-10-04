@@ -1,5 +1,6 @@
 // --- Timing ---
-export const BOT_MOVE_INTERVAL = 220;
+export const BOT_MOVE_INTERVAL = 400; // Significantly slowed down bots for better gameplay balance
+export const PLAYER_MOVE_COOLDOWN = 50; // Player can move faster
 
 // --- Game State Enum ---
 export const GAME_STATE = {

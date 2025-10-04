@@ -86,10 +86,14 @@ body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-c
 .game-header { display: flex; align-items: center; justify-content: center; position: relative; width: 100%; margin-bottom: 10px; }
 .back-btn { position: absolute; left: 0; font-size: 0.9rem; font-weight: 600; padding: 10px 20px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: white; cursor: pointer; transition: all 0.2s ease-in-out; }
 .back-btn:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
-.bot-legend { display: flex; justify-content: center; gap: 30px; margin-top: 20px; padding: 15px 25px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; backdrop-filter: blur(10px); }
+.bot-legend { display: flex; justify-content: center; gap: 30px; margin-top: 16px; padding: 14px 22px; background: rgba(0, 0, 0, 0.28); border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 12px; backdrop-filter: blur(10px); }
 .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500; }
 .legend-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.7); box-shadow: 0 0 6px rgba(0, 0, 0, 0.8); }
+.page-bottom-spacer { height: 56px; }
 .board { display: grid; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 5px; background-color: #111; box-shadow: 0 0 25px rgba(0, 0, 0, 0.5); }
+.board .cell { box-sizing: content-box; }
+.board { display: grid; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 5px; background-color: #111; box-shadow: 0 0 25px rgba(0, 0, 0, 0.5); }
+.board .cell { box-sizing: content-box; }
 .cell { position: relative; }
 .cell-wall { background-color: #1a1a1a; } .cell-path { background-color: #666; } .cell-start { background-color: #28a745; } .cell-finish { background-color: #dc3545; }
 .entity { position: absolute; width: 45%; height: 45%; border-radius: 50%; transition: all 0.1s linear; box-shadow: 0 0 6px rgba(0, 0, 0, 0.8); border: 2px solid rgba(255, 255, 255, 0.7); z-index: 10; }

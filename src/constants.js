@@ -2,6 +2,11 @@
 export const BOT_MOVE_INTERVAL = 400; // Significantly slowed down bots for better gameplay balance
 export const PLAYER_MOVE_COOLDOWN = 50; // Player can move faster
 
+// Per-bot randomized speed range (in milliseconds). Each bot will pick a random
+// interval between BOT_SPEED_MIN and BOT_SPEED_MAX to determine how often it moves.
+export const BOT_SPEED_MIN = 250; // fastest a bot can move (ms)
+export const BOT_SPEED_MAX = 700; // slowest a bot can move (ms)
+
 // --- Game State Enum ---
 export const GAME_STATE = {
   MENU: 'menu',
@@ -20,10 +25,7 @@ export const BOT_CONFIG = [
   { name: 'A*', color: '#ffa500' },
 ];
 
-// Per-bot speed range (in milliseconds). Each bot will be assigned a random move interval
-// sampled uniformly from [BOT_SPEED_MIN, BOT_SPEED_MAX]. Lower = faster.
-export const BOT_SPEED_MIN = 220;
-export const BOT_SPEED_MAX = 520;
+// (Original file - no per-bot speed constants)
 
 // --- Track Data ---
 export const TRACKS = [

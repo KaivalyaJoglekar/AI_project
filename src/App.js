@@ -11,7 +11,7 @@ import { bfs } from './algorithms/bfs';
 import { dfs } from './algorithms/dfs';
 import { gbfs } from './algorithms/gbfs';
 import { aStar } from './algorithms/aStar';
-import { GAME_STATE, BOT_CONFIG, BOT_MOVE_INTERVAL, PLAYER_MOVE_COOLDOWN, START_POS, FINISH_POS, TRACKS, MAZE_WIDTH, MAZE_HEIGHT } from './constants';
+import { GAME_STATE, BOT_CONFIG, BOT_MOVE_INTERVAL, BOT_SPEED_MIN, BOT_SPEED_MAX, PLAYER_MOVE_COOLDOWN, START_POS, FINISH_POS, TRACKS, MAZE_WIDTH, MAZE_HEIGHT } from './constants';
 
 const algos = { BFS: bfs, DFS: dfs, GBFS: gbfs, 'A*': aStar };
 const TOTAL_RACERS = BOT_CONFIG.length + 1;
@@ -54,23 +54,35 @@ function App() {
     raceStartTime.current = 0;
     gameTickRef.current = 0;
     finishedRacersRef.current.clear();
-    botsRef.current = BOT_CONFIG.map(config => ({
-      ...config,
-      pos: START_POS,
-      path: algos[config.name](newMaze, START_POS, FINISH_POS) || [],
-      pathIndex: 0
-    }));
+    // Initialize bots with randomized per-bot move intervals so each bot has different speed
+    botsRef.current = BOT_CONFIG.map(config => {
+      const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+      return {
+        ...config,
+        pos: START_POS,
+        path: algos[config.name](newMaze, START_POS, FINISH_POS) || [],
+        pathIndex: 0,
+        // Each bot gets its own move interval (ms). Lower value = faster bot.
+        moveInterval: rand(BOT_SPEED_MIN, BOT_SPEED_MAX),
+        // Track last move time per bot for precise scheduling
+        lastMoveAt: 0,
+      };
+    });
   }, []);
 
   // High-Performance Game Loop with separate player and bot speeds
   useEffect(() => {
     if (gameState !== GAME_STATE.PLAYING) return;
-    
+
+    // Hide document scrollbars while playing so arrow keys don't scroll the page
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     // Set race start time when game begins
     if (raceStartTime.current === 0) {
       raceStartTime.current = Date.now();
     }
-    
+
     const gameInterval = setInterval(() => {
       gameTickRef.current++;
       const currentTime = Date.now();
@@ -88,16 +100,16 @@ function App() {
         }
         playerNextMoveRef.current = null;
       }
-      // Update Bots (with controlled speed)
-      if (currentTime - botsLastMoveTime.current >= BOT_MOVE_INTERVAL) {
-        botsRef.current = botsRef.current.map(bot => {
-          if (bot.pathIndex < bot.path.length - 1 && !finishedRacersRef.current.has(bot.name)) {
-            return { ...bot, pos: bot.path[bot.pathIndex + 1], pathIndex: bot.pathIndex + 1 };
-          }
-          return bot;
-        });
-        botsLastMoveTime.current = currentTime;
-      }
+      // Update Bots (each bot moves according to its own moveInterval)
+      botsRef.current = botsRef.current.map(bot => {
+        if (finishedRacersRef.current.has(bot.name)) return bot;
+        const last = bot.lastMoveAt || 0;
+        const interval = bot.moveInterval || BOT_MOVE_INTERVAL;
+        if (bot.pathIndex < bot.path.length - 1 && (currentTime - last >= interval)) {
+          return { ...bot, pos: bot.path[bot.pathIndex + 1], pathIndex: bot.pathIndex + 1, lastMoveAt: currentTime };
+        }
+        return bot;
+      });
       // Check Finishers
       let newFinishers = [];
       const checkFinisher = (racer, pos, color, steps) => {
@@ -113,7 +125,11 @@ function App() {
       if (finishedRacersRef.current.size === TOTAL_RACERS) setGameState(GAME_STATE.FINISHED);
       else forceUpdate();
     }, 50); // Run game loop more frequently to handle faster player movement
-    return () => clearInterval(gameInterval);
+    return () => {
+      clearInterval(gameInterval);
+      // Restore previous overflow when leaving PLAYING state
+      document.body.style.overflow = prevOverflow;
+    };
   }, [gameState, maze]);
 
   // --- REWRITTEN Player Input Handler for Reliability ---
@@ -134,9 +150,9 @@ function App() {
         playerNextMoveRef.current = move;
       }
     };
-    // Add the listener once and never remove it
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    // Add the listener once and remove on cleanup. Use passive: false so preventDefault() works reliably.
+    window.addEventListener('keydown', handleKeyDown, { passive: false });
+    return () => window.removeEventListener('keydown', handleKeyDown, { passive: false });
   }, []); // Empty dependency array means this effect runs only once
 
   // UI Action Handlers (Unchanged)

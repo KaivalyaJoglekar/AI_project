@@ -20,6 +20,11 @@ export const BOT_CONFIG = [
   { name: 'A*', color: '#ffa500' },
 ];
 
+// Per-bot speed range (in milliseconds). Each bot will be assigned a random move interval
+// sampled uniformly from [BOT_SPEED_MIN, BOT_SPEED_MAX]. Lower = faster.
+export const BOT_SPEED_MIN = 220;
+export const BOT_SPEED_MAX = 520;
+
 // --- Track Data ---
 export const TRACKS = [
   { name: 'Imola', description: 'A classic, technical track with flowing corners.', complexity: 0.06 },

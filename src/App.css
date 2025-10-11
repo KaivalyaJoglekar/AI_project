@@ -2,7 +2,7 @@
 body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-color: transparent; overflow-y: hidden; user-select: none; }
 #root { width: 100vw; min-height: 100vh; display: flex; justify-content: center; align-items: center; position: relative; }
 
-/* --- Animated Background Component Styles --- */
+/* --- Animated Background Component Styles (Blob colors updated) --- */
 .animated-background { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; background-color: #000; }
 .blob {
   position: absolute;
@@ -15,7 +15,8 @@ body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-c
   top: -14rem;
   right: -8%;
   width: 46vw;
-  background-image: radial-gradient(ellipse at 70% 30%, rgba(253, 110, 20, 0.28), transparent 60%);
+  /* Orange changed to Red */
+  background-image: radial-gradient(ellipse at 70% 30%, rgba(225, 6, 0, 0.25), transparent 60%);
   animation: move-blob-1 45s infinite alternate ease-in-out;
 }
 .blob-2 {
@@ -29,7 +30,8 @@ body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-c
   top: 18%;
   left: 64%;
   width: 30vw;
-  background-image: radial-gradient(ellipse at 50% 50%, rgba(253, 110, 20, 0.18), transparent 60%);
+  /* Orange changed to Red */
+  background-image: radial-gradient(ellipse at 50% 50%, rgba(225, 6, 0, 0.15), transparent 60%);
   animation: move-blob-3 40s infinite alternate ease-in-out;
 }
 .blob-4 {
@@ -115,61 +117,107 @@ body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-c
 .entity { position: absolute; width: 45%; height: 45%; border-radius: 50%; transition: all 0.1s linear; box-shadow: 0 0 6px rgba(0, 0, 0, 0.8); border: 2px solid rgba(255, 255, 255, 0.7); z-index: 10; }
 .pos-player { top: 5%; left: 5%; } .pos-BFS { top: 5%; right: 5%; } .pos-DFS { bottom: 5%; left: 5%; } .pos-GBFS { bottom: 5%; right: 5%; } .pos-A\\* { top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
-/* --- UI FIX: 2x3 Grid Track Selection --- */
-.track-selection-container .glass-container {
-  /* This container still provides the blurred background and border */
-  width: auto; /* Width will be determined by its content */
-  max-width: 720px; /* Generous max-width for the grid */
-}
-.track-cards-container {
-  /* This is the key change for the 2x3 grid */
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Creates exactly 2 columns */
-  gap: 30px;
-  margin-bottom: 25px;
-}
-.track-card {
-  /* The cards are transparent to see the main container's blur */
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 15px;
-  padding: 25px;
-  /* Width is now controlled by the grid, remove static width */
-  height: 160px;
+/* --- FINAL Styles for Track Selection --- */
+.track-selection-page {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1000px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  animation: fadeIn 0.5s ease-in-out;
+}
+.track-selection-page .title {
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: white;
+  text-shadow: none;
+}
+.track-cards-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  width: 100%;
+  margin-bottom: 40px;
+}
+.track-card {
+  background-color: transparent;
+  /* --- Shiny silver border added --- */
+  border: 1px solid #555;
+  border-radius: 20px;
+  padding: 24px;
+  text-align: left;
   cursor: pointer;
-  box-shadow: none; /* Shadow is handled by the main container */
-  transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+  transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  height: 160px;
+  position: relative;
+  overflow: hidden;
 }
 .track-card:hover {
-  transform: translateY(-8px);
-  background-color: rgba(255, 20, 57, 0.1); /* Faint red background on hover */
-  border-color: #ff1439; /* Neon Red */
-  /* Remove box-shadow from here to avoid weird layering */
+  transform: translateY(-5px);
+  border-color: #E10600;
+  box-shadow: 0 0 20px rgba(225, 6, 0, 0.4);
+}
+.track-info {
+  position: relative;
+  z-index: 2;
 }
 .track-name {
-  margin: 0;
+  margin: 0 0 12px 0;
   font-size: 1.6rem;
   font-weight: 700;
-  text-shadow: 0 0 5px rgba(255,255,255,0.3);
   display: flex;
   align-items: center;
   gap: 12px;
 }
 .track-flag {
-  font-size: 2rem;
-  filter: drop-shadow(0 0 3px #000);
+  font-size: 1.6rem;
+  line-height: 1;
 }
-.track-description { 
-  font-size: 0.9rem; 
-  color: #ccc; 
-  line-height: 1.4; 
-  text-align: left;
+.track-description {
+  font-size: 0.75rem;
+  color: #a0a0a0;
+  line-height: 1.4;
+  margin: 0;
+  width: 65%;
+}
+.track-image-decoration {
+  position: absolute;
+  /* --- Position adjusted to prevent any overlap --- */
+  bottom: 20px;
+  right: 20px;
+  max-width: 110px;
+  max-height: 90px;
+  width: auto;
+  height: auto;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 1;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+  filter: brightness(0) invert(13%) sepia(80%) saturate(6000%) hue-rotate(350deg) brightness(95%) contrast(110%);
+}
+.track-card:hover .track-image-decoration {
+  opacity: 1;
+  transform: scale(1.05);
+}
+.dark-button {
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 12px 30px;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background-color: #1a1a1a;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+.dark-button:hover {
+  background-color: #2a2a2a;
+  border-color: #777;
 }
 
 

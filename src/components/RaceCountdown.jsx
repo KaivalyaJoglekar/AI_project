@@ -8,7 +8,6 @@ export default function RaceCountdown({ onCountdownFinish }) {
       const timer = setTimeout(() => setLights(l => l + 1), 700);
       return () => clearTimeout(timer);
     } else {
-      // After all 5 lights are on, wait a moment, then "lights out!"
       const finishTimer = setTimeout(() => onCountdownFinish(), 800);
       return () => clearTimeout(finishTimer);
     }

@@ -1,8 +1,6 @@
-import { MAZE_WIDTH, MAZE_HEIGHT } from '../constants'; // Import constants
+import { MAZE_WIDTH, MAZE_HEIGHT } from '../constants';
 
-// Accept width and height as arguments
 export const generateMaze = (width = MAZE_WIDTH, height = MAZE_HEIGHT, complexity = 0.08) => {
-  // The rest of the function is exactly the same...
   const maze = Array(height).fill(null).map(() => Array(width).fill(1));
   const stack = [];
   maze[1][1] = 0;

@@ -22,7 +22,6 @@ const Board = ({ maze, playerPos, bots }) => {
             className={`cell ${getCellClass(x, y, cell)}`}
             style={{ width: `${CELL_SIZE}px`, height: `${CELL_SIZE}px` }}
           >
-            {/* Render Player with its unique position class */}
             {playerPos.x === x && playerPos.y === y && (
               <div
                 className="entity pos-player"
@@ -30,7 +29,6 @@ const Board = ({ maze, playerPos, bots }) => {
               />
             )}
             
-            {/* Render Bots with their unique position classes */}
             {bots.map(bot =>
               bot.pos.x === x && bot.pos.y === y && (
                 <div

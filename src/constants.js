@@ -1,12 +1,3 @@
-// --- Timing ---
-export const BOT_MOVE_INTERVAL = 400; // Significantly slowed down bots for better gameplay balance
-export const PLAYER_MOVE_COOLDOWN = 50; // Player can move faster
-
-// Per-bot randomized speed range (in milliseconds). Each bot will pick a random
-// interval between BOT_SPEED_MIN and BOT_SPEED_MAX to determine how often it moves.
-export const BOT_SPEED_MIN = 250; // fastest a bot can move (ms)
-export const BOT_SPEED_MAX = 700; // slowest a bot can move (ms)
-
 // --- Game State Enum ---
 export const GAME_STATE = {
   MENU: 'menu',
@@ -17,6 +8,13 @@ export const GAME_STATE = {
   FINISHED: 'finished',
 };
 
+// --- Timing ---
+export const PLAYER_MOVE_COOLDOWN = 50; // Player can move faster
+
+// --- Bot Speed ---
+export const BOT_SPEED_MIN = 300; // The fastest a bot can move (milliseconds per step)
+export const BOT_SPEED_MAX = 500; // The slowest a bot can move
+
 // --- Bot Configuration ---
 export const BOT_CONFIG = [
   { name: 'BFS', color: '#00ffff' },
@@ -25,8 +23,6 @@ export const BOT_CONFIG = [
   { name: 'A*', color: '#ffa500' },
 ];
 
-// (Original file - no per-bot speed constants)
-
 // --- Track Data ---
 export const TRACKS = [
   { name: 'Imola', description: 'A classic, technical track with flowing corners.', complexity: 0.06 },
@@ -34,11 +30,11 @@ export const TRACKS = [
   { name: 'Interlagos', description: 'A fast, open track with numerous passing opportunities.', complexity: 0.15 },
 ];
 
-// --- NEW, LARGER MAZE DIMENSIONS ---
+// --- Maze Dimensions ---
 export const MAZE_WIDTH = 41;  // Must be odd
 export const MAZE_HEIGHT = 25; // Must be odd
 
 // --- Other Constants ---
-export const CELL_SIZE = 22; // Slightly smaller cells to fit the larger maze on screen
+export const CELL_SIZE = 22;
 export const START_POS = { x: 1, y: 1 };
 export const FINISH_POS = { x: MAZE_WIDTH - 2, y: MAZE_HEIGHT - 2 };

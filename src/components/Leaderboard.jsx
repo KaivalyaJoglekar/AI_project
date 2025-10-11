@@ -1,87 +1,80 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import Confetti from 'react-confetti';
 
-// A custom hook to store the previous value of a prop or state
-const usePrevious = (value) => {
-  const ref = useRef();
+const Leaderboard = ({ results, onPlayAgain, onMenu }) => {
+  const [revealedPodium, setRevealedPodium] = useState([]);
+  const [showOthers, setShowOthers] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  const sortedResults = [...results].sort((a, b) => a.rank - b.rank);
+  const podiumFinishers = sortedResults.slice(0, 3);
+
+  // This effect now runs ONLY ONCE when the component mounts, fixing the animation bug.
   useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-};
+    const timers = [];
+    const thirdPlace = podiumFinishers.find(r => r.rank === 3);
+    const secondPlace = podiumFinishers.find(r => r.rank === 2);
+    const firstPlace = podiumFinishers.find(r => r.rank === 1);
 
-// Constants for styling
-const ROW_HEIGHT = 40; // The height of each racer's row in pixels
-
-const LiveLeaderboard = ({ data, playerName }) => {
-  const prevData = usePrevious(data);
-
-  if (!data || data.length === 0) {
-    return null;
-  }
-  
-  const getRankChange = (name) => {
-    if (!prevData) return 'none';
-    const prevRacer = prevData.find(p => p.name === name);
-    const currentRacer = data.find(p => p.name === name);
-    if (!prevRacer || !currentRacer) return 'none';
-
-    if (currentRacer.rank < prevRacer.rank) return 'up';
-    if (currentRacer.rank > prevRacer.rank) return 'down';
-    return 'none';
-  };
-
-  const getGap = (index) => {
-    if (index === 0) {
-      // Leader is at the front
-      return 'Interval';
+    // Animation sequence
+    if (thirdPlace) timers.push(setTimeout(() => setRevealedPodium(prev => [...prev, thirdPlace]), 500));
+    if (secondPlace) timers.push(setTimeout(() => setRevealedPodium(prev => [...prev, secondPlace]), 1500));
+    if (firstPlace) {
+      timers.push(setTimeout(() => {
+        setRevealedPodium(prev => [...prev, firstPlace]);
+        setShowConfetti(true); // Trigger confetti for the winner!
+      }, 2500));
     }
-    const leaderProgress = data[0].progress;
-    const currentProgress = data[index].progress;
-    // Estimate gap in seconds. Assuming a 40-second lap/race for calculation.
-    const gapSeconds = (leaderProgress - currentProgress) * 40;
-    return `+${gapSeconds.toFixed(1)}s`;
-  };
+    timers.push(setTimeout(() => setShowOthers(true), 4000));
+
+    return () => timers.forEach(clearTimeout);
+  }, []); // The empty dependency array [] is the crucial fix.
 
   return (
-    <div className="live-leaderboard-pylon">
-      <div className="pylon-header">
-        <span>POS</span>
-        <span>DRIVER</span>
-        <span>GAP</span>
-      </div>
-      <div className="pylon-body" style={{ height: `${data.length * ROW_HEIGHT}px` }}>
-        {data.map((racer, index) => {
-          const rankChange = getRankChange(racer.name);
-          const isPlayer = racer.name === playerName;
-          
+    <div className="podium-celebration-container">
+      {showConfetti && <Confetti recycle={false} numberOfPieces={400} tweenDuration={15000} />}
+      
+      <div className="podium-main">
+        {podiumFinishers.map(racer => {
+          const isRevealed = revealedPodium.some(p => p.rank === racer.rank);
           return (
-            <div
-              key={racer.name}
-              className={`racer-row ${isPlayer ? 'player-row' : ''}`}
-              style={{ transform: `translateY(${(racer.rank - 1) * ROW_HEIGHT}px)` }}
-            >
-              <div className="racer-pos">
-                <span>{racer.rank}</span>
-                {rankChange === 'up' && <span className="rank-change rank-up">▲</span>}
-                {rankChange === 'down' && <span className="rank-change rank-down">▼</span>}
+            <div key={racer.rank} className={`podium-finisher p${racer.rank} ${isRevealed ? 'reveal' : ''}`}>
+              {racer.rank === 1 && <div className="winner-banner">WINNER</div>}
+              <div className="podium-racer-name">{racer.name}</div>
+              <div className="podium-rank" style={{ color: racer.color }}>{racer.rank}</div>
+              <div className="podium-base">
+                <div className="podium-racer-time">{racer.time}s</div>
               </div>
-              <div className="racer-name">
-                <span className="color-bar" style={{ backgroundColor: racer.color }}></span>
-                {racer.name}
-              </div>
-              <div className="racer-gap">
-                {getGap(index)}
-              </div>
-              <div 
-                className="progress-bar-bg"
-                style={{ width: `${racer.progress * 100}%` }}
-              />
             </div>
           );
         })}
+      </div>
+
+      <div className={`results-sidebar ${showOthers ? 'reveal' : ''}`}>
+        <h2 className="sidebar-title">Full Standings</h2>
+        <div className="full-results-list">
+          {sortedResults.map(racer => (
+            <div key={racer.rank} className="other-finisher-row">
+              <span className="other-rank">{racer.rank}</span>
+              <div className="other-name-cell">
+                <span className="driver-color-bar-small" style={{ backgroundColor: racer.color }}></span>
+                <span className="other-name">{racer.name}</span>
+              </div>
+              <span className="other-time">{racer.time}s</span>
+            </div>
+          ))}
+        </div>
+        <div className="leaderboard-buttons">
+          <button className="glass-button primary" onClick={onPlayAgain}>
+            Race Again
+          </button>
+          <button className="glass-button" onClick={onMenu}>
+            Main Menu
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default LiveLeaderboard;
+export default Leaderboard;

@@ -4,20 +4,65 @@ body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-c
 
 /* --- Animated Background Component Styles --- */
 .animated-background { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; background-color: #000; }
-.bg-grid { position: absolute; inset: 0; opacity: 0.15; background-image: linear-gradient(rgba(192,192,192,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(192,192,192,0.3) 1px, transparent 1px); background-size: 60px 60px; }
-.blob { position: absolute; aspect-ratio: 1 / 1; border-radius: 9999px; filter: blur(3rem); }
-.blob-1 { top: -14rem; right: -8%; width: 46vw; background-image: radial-gradient(ellipse at 70% 30%, rgba(253, 110, 20, 0.28), transparent 60%); }
-.blob-2 { bottom: -9rem; left: -8%; width: 42vw; background-image: radial-gradient(ellipse at 30% 70%, rgba(220, 38, 38, 0.22), transparent 60%); }
-.blob-3 { top: 18%; left: 64%; width: 30vw; background-image: radial-gradient(ellipse at 50% 50%, rgba(253, 110, 20, 0.18), transparent 60%); }
-.blob-4 { bottom: 12%; right: 58%; width: 26vw; background-image: radial-gradient(ellipse at 50% 50%, rgba(220, 38, 38, 0.16), transparent 60%); }
+.blob {
+  position: absolute;
+  aspect-ratio: 1 / 1;
+  border-radius: 9999px;
+  filter: blur(3rem);
+  will-change: transform;
+}
+.blob-1 {
+  top: -14rem;
+  right: -8%;
+  width: 46vw;
+  background-image: radial-gradient(ellipse at 70% 30%, rgba(253, 110, 20, 0.28), transparent 60%);
+  animation: move-blob-1 45s infinite alternate ease-in-out;
+}
+.blob-2 {
+  bottom: -9rem;
+  left: -8%;
+  width: 42vw;
+  background-image: radial-gradient(ellipse at 30% 70%, rgba(220, 38, 38, 0.22), transparent 60%);
+  animation: move-blob-2 55s infinite alternate ease-in-out;
+}
+.blob-3 {
+  top: 18%;
+  left: 64%;
+  width: 30vw;
+  background-image: radial-gradient(ellipse at 50% 50%, rgba(253, 110, 20, 0.18), transparent 60%);
+  animation: move-blob-3 40s infinite alternate ease-in-out;
+}
+.blob-4 {
+  bottom: 12%;
+  right: 58%;
+  width: 26vw;
+  background-image: radial-gradient(ellipse at 50% 50%, rgba(220, 38, 38, 0.16), transparent 60%);
+  animation: move-blob-4 50s infinite alternate ease-in-out;
+}
 .grain-overlay { position: absolute; inset: 0; opacity: 0.1; mix-blend-mode: normal; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6' /></svg>"); }
+@keyframes move-blob-1 {
+  from { transform: translate(0, 0) rotate(0deg); }
+  to { transform: translate(-5vw, 10vh) rotate(30deg); }
+}
+@keyframes move-blob-2 {
+  from { transform: translate(0, 0) rotate(0deg); }
+  to { transform: translate(10vw, -5vh) rotate(-40deg); }
+}
+@keyframes move-blob-3 {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(5vw, -5vh) scale(1.1); }
+}
+@keyframes move-blob-4 {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-5vw, 5vh) scale(0.9); }
+}
 
 /* --- Glassmorphism Container --- */
 .glass-container { background: rgba(10, 10, 10, 0.5); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); padding: 40px; text-align: center; transition: all 0.3s ease; }
 .title { font-size: 3rem; font-weight: 700; margin-bottom: 25px; letter-spacing: 2px; text-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
 .glass-button { font-size: 1.1rem; font-weight: 600; padding: 12px 25px; width: 250px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; background: rgba(255, 255, 255, 0.1); color: white; cursor: pointer; transition: all 0.2s ease-in-out; margin-top: 15px; }
 .glass-button:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
-.game-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 0.5s ease-in-out; }
+.game-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 0.5s ease-in-out; width: 100%; height: 100%; }
 @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
 /* --- Player Setup Form Styles --- */
@@ -30,12 +75,12 @@ body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-c
 .form-buttons .glass-button { width: 48%; }
 .glass-button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-/* --- NEW: Race UI Layout --- */
+/* --- Race UI Layout --- */
 .race-ui-container {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  height: 100vh;
+  width: auto;
+  height: auto;
   padding: 20px 40px;
   box-sizing: border-box;
   animation: fadeIn 0.5s ease-in-out;
@@ -70,11 +115,65 @@ body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-c
 .entity { position: absolute; width: 45%; height: 45%; border-radius: 50%; transition: all 0.1s linear; box-shadow: 0 0 6px rgba(0, 0, 0, 0.8); border: 2px solid rgba(255, 255, 255, 0.7); z-index: 10; }
 .pos-player { top: 5%; left: 5%; } .pos-BFS { top: 5%; right: 5%; } .pos-DFS { bottom: 5%; left: 5%; } .pos-GBFS { bottom: 5%; right: 5%; } .pos-A\\* { top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
-/* --- Track Selection, Countdown, etc. (Unchanged) --- */
-.track-cards-container { display: flex; gap: 20px; margin-bottom: 20px; }
-.track-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 20px; width: 200px; cursor: pointer; transition: all 0.2s ease-in-out; }
-.track-card:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-5px); }
-.track-name { margin-top: 0; } .track-description { font-size: 0.9rem; color: #ccc; }
+/* --- UI FIX: 2x3 Grid Track Selection --- */
+.track-selection-container .glass-container {
+  /* This container still provides the blurred background and border */
+  width: auto; /* Width will be determined by its content */
+  max-width: 720px; /* Generous max-width for the grid */
+}
+.track-cards-container {
+  /* This is the key change for the 2x3 grid */
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Creates exactly 2 columns */
+  gap: 30px;
+  margin-bottom: 25px;
+}
+.track-card {
+  /* The cards are transparent to see the main container's blur */
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  padding: 25px;
+  /* Width is now controlled by the grid, remove static width */
+  height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: none; /* Shadow is handled by the main container */
+  transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+}
+.track-card:hover {
+  transform: translateY(-8px);
+  background-color: rgba(255, 20, 57, 0.1); /* Faint red background on hover */
+  border-color: #ff1439; /* Neon Red */
+  /* Remove box-shadow from here to avoid weird layering */
+}
+.track-name {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(255,255,255,0.3);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.track-flag {
+  font-size: 2rem;
+  filter: drop-shadow(0 0 3px #000);
+}
+.track-description { 
+  font-size: 0.9rem; 
+  color: #ccc; 
+  line-height: 1.4; 
+  text-align: left;
+}
+
+
+/* --- Countdown, etc. --- */
 .countdown-container { padding: 40px 60px; }
 .lights-grid { display: flex; gap: 25px; margin-bottom: 20px; }
 .light { width: 60px; height: 60px; border-radius: 50%; background-color: #330000; border: 2px solid rgba(255, 255, 255, 0.2); transition: all 0.2s; box-shadow: inset 0 0 10px #000; }
@@ -115,20 +214,127 @@ body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-c
 .progress-track { position: absolute; bottom: 6px; left: 20px; right: 20px; height: 5px; background-color: rgba(0, 0, 0, 0.2); border-radius: 2.5px; overflow: hidden; }
 .progress-fill { height: 100%; border-radius: 2.5px; transition: width 0.3s linear; }
 
-/* --- Final Podium Leaderboard Styles --- */
-.leaderboard-podium-container { width: 600px; }
-.podium { display: flex; justify-content: center; align-items: flex-end; gap: 10px; height: 250px; margin-bottom: 40px; }
-.podium-step { width: 30%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding: 20px; border-radius: 10px 10px 0 0; background: rgba(255, 255, 255, 0.1); border-top: 2px solid; }
-.podium-step.p1 { height: 100%; border-color: #FFD700; order: 2; }
-.podium-step.p2 { height: 80%; border-color: #C0C0C0; order: 1; }
-.podium-step.p3 { height: 60%; border-color: #CD7F32; order: 3; }
-.podium-racer-name { font-size: 1.4rem; font-weight: 600; }
-.podium-rank { font-size: 4rem; font-weight: 700; line-height: 1; margin: 10px 0; }
-.podium-racer-time { font-size: 1.1rem; color: #ddd; }
-.other-finishers-list { width: 100%; text-align: left; margin-top: 20px; }
-.other-finisher-row { display: flex; justify-content: space-between; padding: 10px 15px; border-radius: 8px; }
-.other-finisher-row:nth-child(odd) { background-color: rgba(255, 255, 255, 0.05); }
-.other-rank { font-weight: 600; width: 50px; }
-.other-name { flex-grow: 1; }
-.other-time { color: #ccc; }
-.leaderboard-buttons { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 20px; }
+/* --- NEW MODERN PODIUM UI STYLES --- */
+.podium-celebration-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  inset: 0;
+  background-color: transparent;
+  animation: fadeIn 1s ease-in-out;
+  overflow: hidden;
+  z-index: 200;
+}
+.podium-main {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  gap: 20px;
+}
+.podium-finisher {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  opacity: 0;
+  transform: translateY(50vh);
+  transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.podium-finisher.reveal {
+  opacity: 1;
+  transform: translateY(0);
+}
+.podium-finisher.p1 { order: 2; transition-delay: 0s; }
+.podium-finisher.p2 { order: 1; transition-delay: 0.2s; }
+.podium-finisher.p3 { order: 3; transition-delay: 0.4s; }
+.winner-banner {
+  position: absolute;
+  top: -60px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #FFD700;
+  letter-spacing: 5px;
+  text-shadow: 0 0 15px #FFD700;
+  animation: banner-fade-in 1s 0.8s forwards;
+  opacity: 0;
+}
+@keyframes banner-fade-in { to { opacity: 1; } }
+.podium-racer-name {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 10px #000;
+  animation: text-fade-in 0.5s 0.5s forwards;
+  opacity: 0;
+}
+@keyframes text-fade-in { to { opacity: 1; } }
+.podium-rank {
+  font-size: 8rem;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 0 20px currentColor;
+  animation: text-fade-in 0.5s 0.7s forwards;
+  opacity: 0;
+}
+.podium-base {
+  width: 100%;
+  background: linear-gradient(to top, rgba(255,255,255,0.08), transparent);
+  border-top: 2px solid rgba(255,255,255,0.2);
+  padding: 20px;
+  box-sizing: border-box;
+  text-align: center;
+  animation: text-fade-in 0.5s 0.9s forwards;
+  opacity: 0;
+}
+.podium-finisher.p1 .podium-base { height: 400px; }
+.podium-finisher.p2 .podium-base { height: 320px; }
+.podium-finisher.p3 .podium-base { height: 260px; }
+.podium-racer-time {
+  font-size: 1.5rem;
+  color: #ccc;
+}
+.results-sidebar {
+  width: 380px;
+  height: 100%;
+  flex-shrink: 0;
+  background-color: rgba(10, 10, 10, 0.7);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 40px 30px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1) 0.5s;
+}
+.results-sidebar.reveal {
+  opacity: 1;
+  transform: translateX(0);
+}
+.sidebar-title {
+  margin: 0 0 20px 0;
+  font-size: 2rem;
+  text-align: center;
+  font-weight: 600;
+}
+.full-results-list {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+.other-finisher-row { display: flex; align-items: center; padding: 12px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.other-rank { font-weight: 700; font-size: 1rem; width: 40px; color: #ddd; }
+.other-name-cell { flex-grow: 1; display: flex; align-items: center; gap: 12px; font-size: 1rem; }
+.driver-color-bar-small { width: 4px; height: 20px; border-radius: 2px; }
+.other-name { font-weight: 500; }
+.other-time { font-size: 0.9rem; color: #a0a0a0; font-family: monospace, sans-serif; }
+.leaderboard-buttons { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+.leaderboard-buttons .glass-button { width: 100%; }
+.glass-button.primary { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.3); }
+.glass-button.primary:hover { background: rgba(255, 255, 255, 0.35); }

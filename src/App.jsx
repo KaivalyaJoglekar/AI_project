@@ -17,7 +17,6 @@ import { GAME_STATE, BOT_CONFIG, PLAYER_MOVE_COOLDOWN, BOT_SPEED_MIN, BOT_SPEED_
 
 const algos = { BFS: bfs, DFS: dfs, GBFS: gbfs, 'A*': aStar };
 const TOTAL_RACERS = BOT_CONFIG.length + 1;
-const ESTIMATED_RACE_TIME_SECONDS = 45;
 
 function App() {
   const [gameState, setGameState] = useState(GAME_STATE.MENU);
@@ -25,9 +24,7 @@ function App() {
   const [finishedLeaderboard, setFinishedLeaderboard] = useState([]);
   const [liveRaceData, setLiveRaceData] = useState([]);
 
-  // --- NEW ARCHITECTURE: Single Source of Truth for all racers ---
   const racersRef = useRef([]);
-  
   const playerInfoRef = useRef({ name: 'You', team: 'Player Team' });
   const selectedTrackRef = useRef(TRACKS[0]);
   const raceStartTime = useRef(0);
@@ -52,7 +49,6 @@ function App() {
     raceStartTime.current = 0;
     finishedRacersRef.current.clear();
 
-    // 1. Initialize Player in the racers array
     const playerPath = algos['A*'](newMaze, START_POS, FINISH_POS) || [];
     racersRef.current.push({
       name: playerInfoRef.current.name,
@@ -64,7 +60,6 @@ function App() {
       totalSteps: playerPath.length > 1 ? playerPath.length - 1 : 1,
     });
 
-    // 2. Initialize Bots in the racers array
     BOT_CONFIG.forEach(config => {
       const path = algos[config.name](newMaze, START_POS, FINISH_POS) || [];
       const moveInterval = Math.floor(Math.random() * (BOT_SPEED_MAX - BOT_SPEED_MIN + 1)) + BOT_SPEED_MIN;
@@ -72,7 +67,7 @@ function App() {
         ...config,
         pos: START_POS,
         path,
-        steps: 0, // 'steps' is now the universal name for pathIndex
+        steps: 0,
         isPlayer: false,
         moveInterval,
         lastMoveTime: 0,
@@ -88,15 +83,9 @@ function App() {
     const gameInterval = setInterval(() => {
       const currentTime = Date.now();
 
-      // --- UNIFIED GAME LOOP ---
       racersRef.current = racersRef.current.map(racer => {
-        if (finishedRacersRef.current.has(racer.name)) {
-          return racer; // Skip finished racers
-        }
-
+        if (finishedRacersRef.current.has(racer.name)) return racer;
         let newRacerState = { ...racer };
-
-        // A. Apply movement logic
         if (racer.isPlayer) {
           const nextMove = playerNextMoveRef.current;
           if (nextMove && currentTime - racer.lastMoveTime >= PLAYER_MOVE_COOLDOWN) {
@@ -108,7 +97,7 @@ function App() {
             }
             playerNextMoveRef.current = null;
           }
-        } else { // It's a bot
+        } else {
           if (currentTime - racer.lastMoveTime >= racer.moveInterval) {
             const newIndex = racer.steps + 1;
             if (newIndex < racer.path.length) {
@@ -118,8 +107,6 @@ function App() {
             }
           }
         }
-
-        // B. Check if the racer has finished
         if (newRacerState.pos.x === FINISH_POS.x && newRacerState.pos.y === FINISH_POS.y) {
           if (!finishedRacersRef.current.has(racer.name)) {
             finishedRacersRef.current.add(racer.name);
@@ -131,26 +118,33 @@ function App() {
         return newRacerState;
       });
 
-      // --- UNIFIED LIVE LEADERBOARD CALCULATION ---
-      const currentStandings = racersRef.current.map(racer => {
-        const progress = Math.min(racer.steps / racer.totalSteps, 1);
-        const estimatedTime = progress * ESTIMATED_RACE_TIME_SECONDS;
-        return { name: racer.name, color: racer.color, progress, estimatedTime, totalSteps: racer.totalSteps };
-      }).sort((a, b) => b.progress - a.progress);
+      const elapsedTimeSeconds = (currentTime - raceStartTime.current) / 1000;
+      const currentStandings = racersRef.current.map(racer => ({
+        name: racer.name,
+        color: racer.color,
+        progress: Math.min(racer.steps / racer.totalSteps, 1),
+        isFinished: finishedRacersRef.current.has(racer.name),
+      })).sort((a, b) => {
+        if (a.isFinished && !b.isFinished) return -1;
+        if (!a.isFinished && b.isFinished) return 1;
+        return b.progress - a.progress;
+      });
+      const leaderProgress = currentStandings[0]?.progress || 0;
+      setLiveRaceData(currentStandings.map((racer, index) => {
+        let gap = 0;
+        if (index > 0 && leaderProgress > 0 && !racer.isFinished) {
+          const progressDeficit = leaderProgress - racer.progress;
+          const timePerUnitOfProgress = elapsedTimeSeconds / leaderProgress;
+          gap = progressDeficit * timePerUnitOfProgress;
+        }
+        return { ...racer, rank: index + 1, gap };
+      }));
 
-      const leaderTime = currentStandings[0]?.estimatedTime || 0;
-      setLiveRaceData(currentStandings.map((racer, index) => ({
-        ...racer,
-        rank: index + 1,
-        gap: racer.estimatedTime - leaderTime,
-      })));
-
-      // This condition will now fire correctly
       if (finishedRacersRef.current.size === TOTAL_RACERS) {
         setGameState(GAME_STATE.FINISHED);
       }
       
-      forceUpdate(); // Re-render the screen
+      forceUpdate();
     }, 50);
 
     return () => clearInterval(gameInterval);
@@ -159,17 +153,15 @@ function App() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       const isArrow = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key);
-      if (!isArrow) return;
-      if (gameStateRef.current === GAME_STATE.PLAYING) {
-        e.preventDefault();
-        if (playerNextMoveRef.current) return;
-        let move = null;
-        if (e.key === 'ArrowUp') move = { dx: 0, dy: -1 };
-        if (e.key === 'ArrowDown') move = { dx: 0, dy: 1 };
-        if (e.key === 'ArrowLeft') move = { dx: -1, dy: 0 };
-        if (e.key === 'ArrowRight') move = { dx: 1, dy: 0 };
-        if (move) playerNextMoveRef.current = move;
-      }
+      if (!isArrow || gameStateRef.current !== GAME_STATE.PLAYING) return;
+      e.preventDefault();
+      if (playerNextMoveRef.current) return;
+      let move = null;
+      if (e.key === 'ArrowUp') move = { dx: 0, dy: -1 };
+      if (e.key === 'ArrowDown') move = { dx: 0, dy: 1 };
+      if (e.key === 'ArrowLeft') move = { dx: -1, dy: 0 };
+      if (e.key === 'ArrowRight') move = { dx: 1, dy: 0 };
+      if (move) playerNextMoveRef.current = move;
     };
     window.addEventListener('keydown', handleKeyDown, { passive: false, capture: true });
     return () => window.removeEventListener('keydown', handleKeyDown, { passive: false, capture: true });
@@ -188,10 +180,8 @@ function App() {
   const handleMenu = () => setGameState(GAME_STATE.MENU);
 
   const renderContent = () => {
-    // Get player and bots from the single racers array for rendering
     const player = racersRef.current.find(r => r.isPlayer);
     const bots = racersRef.current.filter(r => !r.isPlayer);
-
     switch (gameState) {
       case GAME_STATE.MENU: return <StartMenu onPlay={() => setGameState(GAME_STATE.PLAYER_SETUP)} />;
       case GAME_STATE.PLAYER_SETUP: return <PlayerSetup onSetupComplete={handlePlayerSetupComplete} onBack={handleMenu} />;
@@ -201,17 +191,15 @@ function App() {
         return (
           <div className="race-ui-container">
             <div className="race-header">
-              <button className="back-btn" onClick={() => setGameState(GAME_STATE.TRACK_SELECTION)}>← Back to Track Selection</button>
+              <button className="back-btn" onClick={() => setGameState(GAME_STATE.TRACK_SELECTION)}>← Back to Track</button>
               <h1 className="title race-title">{selectedTrackRef.current.name}</h1>
             </div>
             <div className="race-main-content">
-              {/* Pass player and bots derived from the single ref */}
               <Board maze={maze} playerPos={player?.pos || START_POS} bots={bots} />
               <LiveLeaderboard data={liveRaceData} finishedRacers={finishedRacersRef.current} playerName={playerInfoRef.current.name} />
             </div>
           </div>
         );
-      case GAME_STATE.FINISHED: return <Leaderboard results={finishedLeaderboard} onPlayAgain={handlePlayAgain} onMenu={handleMenu} />;
       default: return null;
     }
   };
@@ -219,9 +207,17 @@ function App() {
   return (
     <>
       <AnimatedBackground />
-      <div className={gameState === GAME_STATE.PLAYING ? "" : "game-wrapper"}>
-        {renderContent()}
-      </div>
+      {gameState === GAME_STATE.FINISHED ? (
+        <Leaderboard
+          results={finishedLeaderboard}
+          onPlayAgain={handlePlayAgain}
+          onMenu={handleMenu}
+        />
+      ) : (
+        <div className="game-wrapper">
+          {renderContent()}
+        </div>
+      )}
     </>
   );
 }

@@ -2,11 +2,19 @@
 export const GAME_STATE = {
   MENU: 'menu',
   PLAYER_SETUP: 'player_setup',
+  MODE_SELECTION: 'mode_selection',
   TRACK_SELECTION: 'track_selection',
+  TOURNAMENT_SETUP: 'tournament_setup',
+  TOURNAMENT_TRACK_SELECTION: 'tournament_track_selection',
+  TOURNAMENT_STANDINGS: 'tournament_standings',
+  TOURNAMENT_FINISHED: 'tournament_finished',
   COUNTDOWN: 'countdown',
   PLAYING: 'playing',
   FINISHED: 'finished',
 };
+
+// --- F1 Points System for Top 5 ---
+export const POINTS_SYSTEM = [25, 18, 15, 12, 10];
 
 // --- Timing ---
 export const PLAYER_MOVE_COOLDOWN = 50; // Player can move faster

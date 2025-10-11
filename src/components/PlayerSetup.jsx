@@ -13,7 +13,7 @@ export default function PlayerSetup({ onSetupComplete, onBack }) {
 
   return (
     <div className="glass-container">
-      <h1 className="title">Driver Profile</h1>
+      <h1 className="menu-title">Driver Profile</h1>
       <form onSubmit={handleSubmit} className="player-setup-form">
         <div className="form-group">
           <label htmlFor="username">Driver Name</label>
@@ -42,8 +42,8 @@ export default function PlayerSetup({ onSetupComplete, onBack }) {
           />
         </div>
         <div className="form-buttons">
-          <button type="button" className="glass-button" onClick={onBack}>Back</button>
-          <button type="submit" className="glass-button" disabled={!name || !team}>
+          <button type="button" className="game-button" onClick={onBack}>Back</button>
+          <button type="submit" className="game-button" disabled={!name || !team}>
             Continue
           </button>
         </div>

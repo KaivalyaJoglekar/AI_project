@@ -93,6 +93,7 @@ body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-c
 .cell-wall { background-color: #1a1a1a; } .cell-path { background-color: #666; } .cell-start { background-color: #28a745; } .cell-finish { background-color: #dc3545; }
 .entity { position: absolute; width: 45%; height: 45%; border-radius: 50%; transition: all 0.1s linear; box-shadow: 0 0 6px rgba(0, 0, 0, 0.8); border: 2px solid rgba(255, 255, 255, 0.7); z-index: 10; }
 .pos-player { top: 5%; left: 5%; } .pos-BFS { top: 5%; right: 5%; } .pos-DFS { bottom: 5%; left: 5%; } .pos-GBFS { bottom: 5%; right: 5%; } .pos-A\\* { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
 .track-selection-page { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 1000px; padding: 0 20px; box-sizing: border-box; animation: fadeIn 0.5s ease-in-out; }
 .track-selection-page .title { font-size: 2.5rem; margin-bottom: 40px; font-weight: 700; letter-spacing: 1.5px; color: white; text-shadow: none; }
 .track-cards-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; width: 100%; margin-bottom: 40px; }
@@ -161,3 +162,40 @@ body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background-c
 .other-time { font-size: 0.9rem; color: #a0a0a0; font-family: monospace, sans-serif; }
 .leaderboard-buttons { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; width: 100%; }
 .leaderboard-buttons .game-button { width: 100%; }
+
+/* --- MODERN F1 COUNTDOWN --- */
+.countdown-container {
+  padding: 40px 60px;
+  background: rgba(10, 10, 10, 0.6);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.lights-grid {
+  display: flex;
+  gap: 25px;
+  margin-bottom: 20px;
+}
+.light {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background-color: #330000;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s;
+  box-shadow: inset 0 0 15px #000;
+}
+.light.on {
+  background-color: #ff0000;
+  box-shadow: 0 0 20px #ff0000, 0 0 35px #ff0000, inset 0 0 10px #ff8080;
+}
+.lights-out-text {
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 5px;
+  animation: flash 1.5s infinite;
+  text-shadow: 0 0 10px white;
+}
+@keyframes flash { 50% { opacity: 0.5; } }

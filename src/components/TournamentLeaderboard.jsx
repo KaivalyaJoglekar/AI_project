@@ -80,8 +80,9 @@ export default function TournamentLeaderboard({ standings, allRaceResults, track
           ))}
         </div>
         <div className="leaderboard-buttons">
-          <button className="f1-button" onClick={onPlayAgain}>Play Again</button>
-          <button className="f1-button" onClick={onMenu}>Main Menu</button>
+          {/* --- FIX: Changed class from "f1-button" to "game-button" --- */}
+          <button className="game-button" onClick={onPlayAgain}>Play Again</button>
+          <button className="game-button" onClick={onMenu}>Main Menu</button>
         </div>
       </div>
     </div>

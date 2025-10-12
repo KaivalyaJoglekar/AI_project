@@ -28,7 +28,7 @@ export const BOT_CONFIG = [
   { name: 'BFS', color: '#00ffff' },
   { name: 'DFS', color: '#ff00ff' },
   { name: 'GBFS', color: '#00ff7f' },
-  { name: 'A*', color: '#ffa500' },
+  { name: 'A*', color: '#ff0000ff' },
 ];
 
 // --- FINAL CURATED Track Data with Flags ---

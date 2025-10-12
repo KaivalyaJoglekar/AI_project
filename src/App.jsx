@@ -12,6 +12,7 @@ import Leaderboard from './components/Leaderboard.jsx';
 import TournamentStandings from './components/TournamentStandings.jsx';
 import TournamentLeaderboard from './components/TournamentLeaderboard.jsx';
 import LiveLeaderboard from './components/LiveLeaderboard.jsx';
+import AudioToggle from './components/AudioToggle.jsx'; // <-- 1. IMPORT the new component
 import { generateMaze } from './maze/generator.js';
 import { bfs } from './algorithms/bfs.js';
 import { dfs } from './algorithms/dfs.js';
@@ -27,6 +28,8 @@ function App() {
   const [maze, setMaze] = useState([]);
   const [finishedLeaderboard, setFinishedLeaderboard] = useState([]);
   const [liveRaceData, setLiveRaceData] = useState([]);
+  const [isAudioRequested, setIsAudioRequested] = useState(false);
+  const [isAudioEnabled, setIsAudioEnabled] = useState(true); // <-- 2. ADD new state for audio toggle
 
   const racersRef = useRef([]);
   const playerInfoRef = useRef({ name: 'You', team: 'Player Team' });
@@ -35,6 +38,7 @@ function App() {
   const playerNextMoveRef = useRef(null);
   const finishedRacersRef = useRef(new Set());
   const tournamentData = useRef(null);
+  const audioRef = useRef(null);
 
   const gameStateRef = useRef(gameState);
   useEffect(() => {
@@ -42,6 +46,48 @@ function App() {
   }, [gameState]);
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
+
+  const handleStartGame = () => {
+    if (!isAudioRequested) {
+      setIsAudioRequested(true);
+    }
+    setGameState(GAME_STATE.PLAYER_SETUP);
+  };
+
+  // --- 3. ADD a handler for the toggle button ---
+  const handleAudioToggle = () => {
+    setIsAudioEnabled(prevState => !prevState);
+  };
+  // ---------------------------------------------
+
+  // --- 4. UPDATE the audio useEffect to respect the toggle ---
+  useEffect(() => {
+    // Initialize the Audio object on the first user interaction
+    if (isAudioRequested && !audioRef.current) {
+      audioRef.current = new Audio('/f1.mp3'); // Assumes f1.mp3 is in /public
+      audioRef.current.loop = true;
+      audioRef.current.volume = 0.25;
+    }
+
+    // Control playback based on the isAudioEnabled state
+    if (audioRef.current) {
+      if (isAudioEnabled) {
+        audioRef.current.play().catch(error => {
+          console.error("Audio playback error:", error);
+        });
+      } else {
+        audioRef.current.pause();
+      }
+    }
+
+    // Cleanup function to pause audio when the app closes
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, [isAudioRequested, isAudioEnabled]); // The effect now runs when the toggle state changes
+  // --------------------------------------------------------
 
   const startRace = useCallback((track) => {
     selectedTrackRef.current = track;
@@ -157,15 +203,15 @@ function App() {
 
       if (finishedRacersRef.current.size === TOTAL_RACERS) {
         clearInterval(gameInterval);
-        setTimeout(handleEndOfRace, 1000); // add a small delay before showing results
+        setTimeout(handleEndOfRace, 1000);
       }
-      
+
       forceUpdate();
     }, 50);
 
     return () => clearInterval(gameInterval);
   }, [gameState, maze, handleEndOfRace]);
-  
+
   const handleTournamentPodiumContinue = () => {
     const standings = tournamentData.current.scores;
     finishedLeaderboard.forEach(racer => {
@@ -216,7 +262,7 @@ function App() {
       setGameState(GAME_STATE.TOURNAMENT_SETUP);
     }
   };
-  
+
   const handleTournamentSetup = (raceCount) => {
     const allRacers = [
       { name: playerInfoRef.current.name, color: 'gold' },
@@ -233,10 +279,10 @@ function App() {
   };
 
   const handleTrackSelectionComplete = (tracks) => {
-    if (Array.isArray(tracks)) { // Tournament
+    if (Array.isArray(tracks)) {
       tournamentData.current.tracks = tracks;
       startRace(tracks[0]);
-    } else { // Single Race
+    } else {
       startRace(tracks);
     }
   };
@@ -259,13 +305,13 @@ function App() {
     const player = racersRef.current.find(r => r.isPlayer);
     const bots = racersRef.current.filter(r => !r.isPlayer);
     switch (gameState) {
-      case GAME_STATE.MENU: return <StartMenu onPlay={() => setGameState(GAME_STATE.PLAYER_SETUP)} />;
+      case GAME_STATE.MENU: return <StartMenu onPlay={handleStartGame} />;
       case GAME_STATE.PLAYER_SETUP: return <PlayerSetup onSetupComplete={handlePlayerSetupComplete} onBack={handleMenu} />;
       case GAME_STATE.MODE_SELECTION: return <ModeSelection onSelect={handleModeSelect} onBack={() => setGameState(GAME_STATE.PLAYER_SETUP)} />;
       case GAME_STATE.TOURNAMENT_SETUP: return <TournamentSetup onSelect={handleTournamentSetup} onBack={() => setGameState(GAME_STATE.MODE_SELECTION)} />;
       case GAME_STATE.TRACK_SELECTION: return <TrackSelection onSelect={handleTrackSelectionComplete} onBack={() => setGameState(GAME_STATE.MODE_SELECTION)} mode="single" />;
       case GAME_STATE.TOURNAMENT_TRACK_SELECTION: return <TrackSelection onSelect={handleTrackSelectionComplete} onBack={() => setGameState(GAME_STATE.TOURNAMENT_SETUP)} mode="tournament" raceCount={tournamentData.current?.raceCount} />;
-      case GAME_STATE.COUNTDOWN: return <RaceCountdown onCountdownFinish={() => setGameState(GAME_STATE.PLAYING)} />;
+      case GAME_state.COUNTDOWN: return <RaceCountdown onCountdownFinish={() => setGameState(GAME_STATE.PLAYING)} />;
       case GAME_STATE.PLAYING:
         const title = tournamentData.current ? `${selectedTrackRef.current.name} (${tournamentData.current.currentRaceIndex + 1}/${tournamentData.current.raceCount})` : selectedTrackRef.current.name;
         return (
@@ -294,6 +340,8 @@ function App() {
   return (
     <>
       <AnimatedBackground />
+      {/* --- 5. RENDER the toggle button after the first interaction --- */}
+      {isAudioRequested && <AudioToggle isAudioEnabled={isAudioEnabled} onToggle={handleAudioToggle} />}
       <div className="game-wrapper">
         {renderContent()}
       </div>

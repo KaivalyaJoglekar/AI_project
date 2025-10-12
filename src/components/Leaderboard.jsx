@@ -8,7 +8,7 @@ const Leaderboard = ({ results, onPlayAgain, onMenu, onContinue, isTournamentRac
 
   const sortedResults = [...results].sort((a, b) => a.rank - b.rank);
   const podiumFinishers = sortedResults.slice(0, 3);
-  const isPlayerWinner = podiumFinishers.find(p => p.rank === 1)?.isPlayer;
+  const winner = sortedResults.find(r => r.rank === 1);
 
   useEffect(() => {
     const timers = [];
@@ -23,13 +23,13 @@ const Leaderboard = ({ results, onPlayAgain, onMenu, onContinue, isTournamentRac
     timers.push(setTimeout(() => setShowOthers(true), 3000));
 
     return () => timers.forEach(clearTimeout);
-  }, [results]);
+  }, []); // Changed dependency to ensure this runs only once on mount
 
   const getRacerByRank = (rank) => sortedResults.find(r => r.rank === rank);
 
   return (
     <div className="podium-celebration-container">
-      {isPlayerWinner && <Confetti recycle={false} numberOfPieces={400} tweenDuration={15000} />}
+      {winner && <Confetti recycle={false} numberOfPieces={800} />}
       
       <div className="podium-main">
         {[getRacerByRank(2), getRacerByRank(1), getRacerByRank(3)].map(racer => {

@@ -8,7 +8,7 @@ const usePrevious = (value) => {
 
 const ROW_HEIGHT = 48;
 
-const LiveLeaderboard = ({ data, finishedRacers, playerName }) => {
+const LiveLeaderboard = ({ data, playerName }) => {
   const prevData = usePrevious(data);
 
   if (!data || data.length === 0) return null;
@@ -23,12 +23,14 @@ const LiveLeaderboard = ({ data, finishedRacers, playerName }) => {
     return 'none';
   };
 
-  // --- THIS IS THE UPDATED LOGIC ---
-  // Formats the gap display according to the new rules.
   const formatGap = (racer) => {
-    if (finishedRacers.has(racer.name)) return 'Finished';
-    if (racer.rank === 1) return 'Leader'; // Only the leader shows "Leader"
-    return `+${racer.gap.toFixed(1)}s`; // Everyone else shows time gap to the leader
+    if (racer.rank === 1) return 'Leader';
+    if (racer.isFinished) {
+      // For finished racers, gap is a precise, final time difference
+      return `+${racer.gap.toFixed(2)}s`;
+    }
+    // For running racers, gap is a live, estimated time difference
+    return `+${racer.gap.toFixed(1)}s`;
   };
 
   return (
@@ -37,12 +39,11 @@ const LiveLeaderboard = ({ data, finishedRacers, playerName }) => {
         {data.map((racer) => {
           const rankChange = getRankChange(racer.name);
           const isPlayer = racer.name === playerName;
-          const isFinished = finishedRacers.has(racer.name);
           
           return (
             <div
               key={racer.name}
-              className={`pylon-row ${isPlayer ? 'player-row' : ''} ${isFinished ? 'finished-row' : ''}`}
+              className={`pylon-row ${isPlayer ? 'player-row' : ''} ${racer.isFinished ? 'finished-row' : ''}`}
               style={{ transform: `translateY(${(racer.rank - 1) * ROW_HEIGHT}px)` }}
             >
               <div className="pylon-pos">
@@ -55,7 +56,7 @@ const LiveLeaderboard = ({ data, finishedRacers, playerName }) => {
                 <span className="driver-name">{racer.name}</span>
               </div>
               <div className="pylon-gap">
-                {formatGap(racer)}
+                {racer.isFinished ? 'Finished' : formatGap(racer)}
               </div>
               <div className="progress-track">
                 <div 

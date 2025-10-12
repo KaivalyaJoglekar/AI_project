@@ -6,27 +6,33 @@ export default function TournamentLeaderboard({ standings, allRaceResults, track
   const [showOthers, setShowOthers] = useState(false);
   const [selectedRace, setSelectedRace] = useState(0);
 
-  const sortedStandings = [...standings].sort((a, b) => b.points - a.points);
+  // Correctly assign ranks to the sorted standings first
+  const sortedStandings = [...standings]
+    .sort((a, b) => b.points - a.points)
+    .map((racer, index) => ({ ...racer, rank: index + 1 }));
+
   const podiumFinishers = sortedStandings.slice(0, 3);
+  
+  // Now, finding finishers by rank will work correctly
   const winner = podiumFinishers.find(p => p.rank === 1);
+  const secondPlace = podiumFinishers.find(p => p.rank === 2);
+  const thirdPlace = podiumFinishers.find(p => p.rank === 3);
 
   useEffect(() => {
     const timers = [];
-    const thirdPlace = podiumFinishers.find(p => p.rank === 3);
-    const secondPlace = podiumFinishers.find(p => p.rank === 2);
-
+    
     if (thirdPlace) timers.push(setTimeout(() => setRevealedPodium(prev => [...prev, thirdPlace]), 500));
     if (secondPlace) timers.push(setTimeout(() => setRevealedPodium(prev => [...prev, secondPlace]), 1500));
     if (winner) timers.push(setTimeout(() => setRevealedPodium(prev => [...prev, winner]), 2500));
+    
     timers.push(setTimeout(() => setShowOthers(true), 4000));
 
     return () => timers.forEach(clearTimeout);
   }, []);
 
+  // This function can now simply find the pre-ranked racer
   const getRacerByRank = (rank) => {
-    const racer = sortedStandings[rank - 1];
-    if (racer) racer.rank = rank;
-    return racer;
+    return sortedStandings.find(r => r.rank === rank);
   };
   
   const selectedRaceResults = allRaceResults[selectedRace].sort((a, b) => a.rank - b.rank);
@@ -54,7 +60,6 @@ export default function TournamentLeaderboard({ standings, allRaceResults, track
 
       <div className={`results-sidebar ${showOthers ? 'reveal' : ''}`}>
         <h2 className="sidebar-title">Race Statistics</h2>
-        {/* Race Selection Tabs */}
         <div style={{ display: 'flex', gap: '5px', marginBottom: '15px' }}>
             {tracks.map((track, index) => (
                 <button key={track.name} onClick={() => setSelectedRace(index)}
@@ -80,7 +85,6 @@ export default function TournamentLeaderboard({ standings, allRaceResults, track
           ))}
         </div>
         <div className="leaderboard-buttons">
-          {/* --- FIX: Changed class from "f1-button" to "game-button" --- */}
           <button className="game-button" onClick={onPlayAgain}>Play Again</button>
           <button className="game-button" onClick={onMenu}>Main Menu</button>
         </div>

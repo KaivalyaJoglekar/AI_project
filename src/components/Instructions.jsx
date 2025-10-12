@@ -8,7 +8,7 @@ const Instructions = ({ onBack }) => (
       You are racing against four AI bots, each using a unique pathfinding algorithm.
       The first one to reach the finish wins!
     </p>
-    <button className="glass-button" onClick={onBack}>
+    <button className="game-button" onClick={onBack}>
       Back to Menu
     </button>
   </div>

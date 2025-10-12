@@ -12,7 +12,7 @@ import Leaderboard from './components/Leaderboard.jsx';
 import TournamentStandings from './components/TournamentStandings.jsx';
 import TournamentLeaderboard from './components/TournamentLeaderboard.jsx';
 import LiveLeaderboard from './components/LiveLeaderboard.jsx';
-import AudioToggle from './components/AudioToggle.jsx'; // <-- 1. IMPORT the new component
+import AudioToggle from './components/AudioToggle.jsx';
 import { generateMaze } from './maze/generator.js';
 import { bfs } from './algorithms/bfs.js';
 import { dfs } from './algorithms/dfs.js';
@@ -29,7 +29,7 @@ function App() {
   const [finishedLeaderboard, setFinishedLeaderboard] = useState([]);
   const [liveRaceData, setLiveRaceData] = useState([]);
   const [isAudioRequested, setIsAudioRequested] = useState(false);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(true); // <-- 2. ADD new state for audio toggle
+  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
 
   const racersRef = useRef([]);
   const playerInfoRef = useRef({ name: 'You', team: 'Player Team' });
@@ -37,6 +37,7 @@ function App() {
   const raceStartTime = useRef(0);
   const playerNextMoveRef = useRef(null);
   const finishedRacersRef = useRef(new Set());
+  const finishTimesRef = useRef({});
   const tournamentData = useRef(null);
   const audioRef = useRef(null);
 
@@ -54,40 +55,27 @@ function App() {
     setGameState(GAME_STATE.PLAYER_SETUP);
   };
 
-  // --- 3. ADD a handler for the toggle button ---
   const handleAudioToggle = () => {
     setIsAudioEnabled(prevState => !prevState);
   };
-  // ---------------------------------------------
 
-  // --- 4. UPDATE the audio useEffect to respect the toggle ---
   useEffect(() => {
-    // Initialize the Audio object on the first user interaction
     if (isAudioRequested && !audioRef.current) {
-      audioRef.current = new Audio('/f1.mp3'); // Assumes f1.mp3 is in /public
+      audioRef.current = new Audio('/f1.mp3');
       audioRef.current.loop = true;
       audioRef.current.volume = 0.25;
     }
-
-    // Control playback based on the isAudioEnabled state
     if (audioRef.current) {
       if (isAudioEnabled) {
-        audioRef.current.play().catch(error => {
-          console.error("Audio playback error:", error);
-        });
+        audioRef.current.play().catch(error => console.error("Audio playback error:", error));
       } else {
         audioRef.current.pause();
       }
     }
-
-    // Cleanup function to pause audio when the app closes
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
+      if (audioRef.current) audioRef.current.pause();
     };
-  }, [isAudioRequested, isAudioEnabled]); // The effect now runs when the toggle state changes
-  // --------------------------------------------------------
+  }, [isAudioRequested, isAudioEnabled]);
 
   const startRace = useCallback((track) => {
     selectedTrackRef.current = track;
@@ -99,6 +87,7 @@ function App() {
     playerNextMoveRef.current = null;
     raceStartTime.current = 0;
     finishedRacersRef.current.clear();
+    finishTimesRef.current = {};
 
     const playerPath = algos['A*'](newMaze, START_POS, FINISH_POS) || [];
     racersRef.current.push({
@@ -140,71 +129,90 @@ function App() {
 
     const gameInterval = setInterval(() => {
       const currentTime = Date.now();
-      let hasEveryoneFinished = finishedRacersRef.current.size === TOTAL_RACERS;
-
-      if (!hasEveryoneFinished) {
-          racersRef.current = racersRef.current.map(racer => {
-            if (finishedRacersRef.current.has(racer.name)) return racer;
-            let newRacerState = { ...racer };
-            if (racer.isPlayer) {
-              const nextMove = playerNextMoveRef.current;
-              if (nextMove && currentTime - racer.lastMoveTime >= PLAYER_MOVE_COOLDOWN) {
-                const newPos = { x: racer.pos.x + nextMove.dx, y: racer.pos.y + nextMove.dy };
-                if (maze[newPos.y]?.[newPos.x] === 0 || (newPos.x === FINISH_POS.x && newPos.y === FINISH_POS.y)) {
-                  newRacerState.pos = newPos;
-                  newRacerState.steps++;
-                  newRacerState.lastMoveTime = currentTime;
-                }
-                playerNextMoveRef.current = null;
-              }
-            } else {
-              if (currentTime - racer.lastMoveTime >= racer.moveInterval) {
-                const newIndex = racer.steps + 1;
-                if (newIndex < racer.path.length) {
-                  newRacerState.pos = racer.path[newIndex];
-                  newRacerState.steps = newIndex;
-                  newRacerState.lastMoveTime = currentTime;
-                }
-              }
-            }
-            if (newRacerState.pos.x === FINISH_POS.x && newRacerState.pos.y === FINISH_POS.y) {
-              if (!finishedRacersRef.current.has(racer.name)) {
-                finishedRacersRef.current.add(racer.name);
-                const elapsedSeconds = ((currentTime - raceStartTime.current) / 1000).toFixed(2);
-                const result = { ...racer, time: elapsedSeconds, rank: finishedRacersRef.current.size };
-                setFinishedLeaderboard(prev => [...prev, result].sort((a, b) => a.rank - b.rank));
-              }
-            }
-            return newRacerState;
-          });
-
-          const elapsedTimeSeconds = (currentTime - raceStartTime.current) / 1000;
-          const currentStandings = racersRef.current.map(racer => ({
-            name: racer.name,
-            color: racer.color,
-            progress: Math.min(racer.steps / racer.totalSteps, 1),
-            isFinished: finishedRacersRef.current.has(racer.name),
-          })).sort((a, b) => {
-            if (a.isFinished && !b.isFinished) return -1;
-            if (!a.isFinished && b.isFinished) return 1;
-            return b.progress - a.progress;
-          });
-          const leaderProgress = currentStandings[0]?.progress || 0;
-          setLiveRaceData(currentStandings.map((racer, index) => {
-            let gap = 0;
-            if (index > 0 && leaderProgress > 0 && !racer.isFinished) {
-              const progressDeficit = leaderProgress - racer.progress;
-              const timePerUnitOfProgress = elapsedTimeSeconds / leaderProgress;
-              gap = progressDeficit * timePerUnitOfProgress;
-            }
-            return { ...racer, rank: index + 1, gap };
-          }));
-      }
-
       if (finishedRacersRef.current.size === TOTAL_RACERS) {
         clearInterval(gameInterval);
         setTimeout(handleEndOfRace, 1000);
+        return;
       }
+
+      racersRef.current = racersRef.current.map(racer => {
+        if (finishedRacersRef.current.has(racer.name)) return racer;
+        let newRacerState = { ...racer };
+        if (racer.isPlayer) {
+          const nextMove = playerNextMoveRef.current;
+          if (nextMove && currentTime - racer.lastMoveTime >= PLAYER_MOVE_COOLDOWN) {
+            const newPos = { x: racer.pos.x + nextMove.dx, y: racer.pos.y + nextMove.dy };
+            if (maze[newPos.y]?.[newPos.x] === 0 || (newPos.x === FINISH_POS.x && newPos.y === FINISH_POS.y)) {
+              newRacerState.pos = newPos;
+              newRacerState.steps++;
+              newRacerState.lastMoveTime = currentTime;
+            }
+            playerNextMoveRef.current = null;
+          }
+        } else {
+          if (currentTime - racer.lastMoveTime >= racer.moveInterval) {
+            const newIndex = racer.steps + 1;
+            if (newIndex < racer.path.length) {
+              newRacerState.pos = racer.path[newIndex];
+              newRacerState.steps = newIndex;
+              newRacerState.lastMoveTime = currentTime;
+            }
+          }
+        }
+        if (newRacerState.pos.x === FINISH_POS.x && newRacerState.pos.y === FINISH_POS.y) {
+          if (!finishedRacersRef.current.has(racer.name)) {
+            finishedRacersRef.current.add(racer.name);
+            const finishTimeSeconds = (currentTime - raceStartTime.current) / 1000;
+            finishTimesRef.current[racer.name] = finishTimeSeconds;
+            const result = { ...racer, time: finishTimeSeconds.toFixed(2), rank: finishedRacersRef.current.size };
+            setFinishedLeaderboard(prev => [...prev, result].sort((a, b) => a.rank - b.rank));
+          }
+        }
+        return newRacerState;
+      });
+
+      const elapsedTimeSeconds = (currentTime - raceStartTime.current) / 1000;
+      const currentStandings = racersRef.current.map(racer => ({
+        name: racer.name,
+        color: racer.color,
+        progress: Math.min(racer.steps / racer.totalSteps, 1),
+        isFinished: finishedRacersRef.current.has(racer.name),
+      })).sort((a, b) => {
+        if (a.isFinished && !b.isFinished) return -1;
+        if (!a.isFinished && b.isFinished) return 1;
+        if (a.isFinished && b.isFinished) {
+          return finishTimesRef.current[a.name] - finishTimesRef.current[b.name];
+        }
+        return b.progress - a.progress;
+      });
+
+      const leader = currentStandings[0];
+      const leaderIsFinished = leader && leader.isFinished;
+
+      setLiveRaceData(currentStandings.map((racer, index) => {
+        let gap = 0;
+        if (index > 0) {
+          const leaderFinishTime = leaderIsFinished ? finishTimesRef.current[leader.name] : null;
+          if (racer.isFinished) {
+            const racerFinishTime = finishTimesRef.current[racer.name];
+            if (leaderFinishTime && racerFinishTime) {
+              gap = racerFinishTime - leaderFinishTime;
+            }
+          } else {
+            if (leaderFinishTime) {
+              gap = elapsedTimeSeconds - leaderFinishTime;
+            } else {
+              const leaderProgress = leader?.progress || 0;
+              if (leaderProgress > 0) {
+                const progressDeficit = leaderProgress - racer.progress;
+                const timePerUnitOfProgress = elapsedTimeSeconds / leaderProgress;
+                gap = progressDeficit * timePerUnitOfProgress;
+              }
+            }
+          }
+        }
+        return { ...racer, rank: index + 1, gap };
+      }));
 
       forceUpdate();
     }, 50);
@@ -217,14 +225,10 @@ function App() {
     finishedLeaderboard.forEach(racer => {
       const points = POINTS_SYSTEM[racer.rank - 1] || 0;
       const currentRacer = standings.find(s => s.name === racer.name);
-      if (currentRacer) {
-        currentRacer.points += points;
-      }
+      if (currentRacer) currentRacer.points += points;
     });
-
     tournamentData.current.allRaceResults.push(finishedLeaderboard);
     tournamentData.current.currentRaceIndex++;
-
     if (tournamentData.current.currentRaceIndex < tournamentData.current.tracks.length) {
       setGameState(GAME_STATE.TOURNAMENT_STANDINGS);
     } else {
@@ -264,10 +268,7 @@ function App() {
   };
 
   const handleTournamentSetup = (raceCount) => {
-    const allRacers = [
-      { name: playerInfoRef.current.name, color: 'gold' },
-      ...BOT_CONFIG
-    ];
+    const allRacers = [{ name: playerInfoRef.current.name, color: 'gold' }, ...BOT_CONFIG];
     tournamentData.current = {
       tracks: [],
       raceCount: raceCount,
@@ -311,21 +312,17 @@ function App() {
       case GAME_STATE.TOURNAMENT_SETUP: return <TournamentSetup onSelect={handleTournamentSetup} onBack={() => setGameState(GAME_STATE.MODE_SELECTION)} />;
       case GAME_STATE.TRACK_SELECTION: return <TrackSelection onSelect={handleTrackSelectionComplete} onBack={() => setGameState(GAME_STATE.MODE_SELECTION)} mode="single" />;
       case GAME_STATE.TOURNAMENT_TRACK_SELECTION: return <TrackSelection onSelect={handleTrackSelectionComplete} onBack={() => setGameState(GAME_STATE.TOURNAMENT_SETUP)} mode="tournament" raceCount={tournamentData.current?.raceCount} />;
-      case GAME_state.COUNTDOWN: return <RaceCountdown onCountdownFinish={() => setGameState(GAME_STATE.PLAYING)} />;
+      case GAME_STATE.COUNTDOWN: return <RaceCountdown onCountdownFinish={() => setGameState(GAME_STATE.PLAYING)} />;
       case GAME_STATE.PLAYING:
         const title = tournamentData.current ? `${selectedTrackRef.current.name} (${tournamentData.current.currentRaceIndex + 1}/${tournamentData.current.raceCount})` : selectedTrackRef.current.name;
         return (
           <div className="race-ui-container">
-            <div className="race-header">
-              <h1 className="title race-title">{title}</h1>
-            </div>
+            <div className="race-header"><h1 className="title race-title">{title}</h1></div>
             <div className="race-main-content">
               <Board maze={maze} playerPos={player?.pos || START_POS} bots={bots} />
               <div className="race-sidebar">
-                <div className="live-track-map">
-                  <img src={selectedTrackRef.current.image} alt={`${selectedTrackRef.current.name} map`} />
-                </div>
-                <LiveLeaderboard data={liveRaceData} finishedRacers={finishedRacersRef.current} playerName={playerInfoRef.current.name} />
+                <div className="live-track-map"><img src={selectedTrackRef.current.image} alt={`${selectedTrackRef.current.name} map`} /></div>
+                <LiveLeaderboard data={liveRaceData} playerName={playerInfoRef.current.name} />
               </div>
             </div>
           </div>
@@ -340,11 +337,8 @@ function App() {
   return (
     <>
       <AnimatedBackground />
-      {/* --- 5. RENDER the toggle button after the first interaction --- */}
       {isAudioRequested && <AudioToggle isAudioEnabled={isAudioEnabled} onToggle={handleAudioToggle} />}
-      <div className="game-wrapper">
-        {renderContent()}
-      </div>
+      <div className="game-wrapper">{renderContent()}</div>
     </>
   );
 }

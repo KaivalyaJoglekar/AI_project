@@ -23,7 +23,7 @@ export default function TournamentStandings({ standings, raceNum, totalRaces, on
         ))}
       </div>
       <div className="leaderboard-buttons">
-        <button className="glass-button primary" onClick={onNextRace}>
+        <button className="game-button" onClick={onNextRace}>
           Continue to Next Race
         </button>
       </div>

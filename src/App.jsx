@@ -12,7 +12,6 @@ import Leaderboard from './components/Leaderboard.jsx';
 import TournamentStandings from './components/TournamentStandings.jsx';
 import TournamentLeaderboard from './components/TournamentLeaderboard.jsx';
 import LiveLeaderboard from './components/LiveLeaderboard.jsx';
-import AudioToggle from './components/AudioToggle.jsx';
 import { generateMaze } from './maze/generator.js';
 import { bfs } from './algorithms/bfs.js';
 import { dfs } from './algorithms/dfs.js';
@@ -28,8 +27,6 @@ function App() {
   const [maze, setMaze] = useState([]);
   const [finishedLeaderboard, setFinishedLeaderboard] = useState([]);
   const [liveRaceData, setLiveRaceData] = useState([]);
-  const [isAudioRequested, setIsAudioRequested] = useState(false);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
 
   const racersRef = useRef([]);
   const playerInfoRef = useRef({ name: 'You', team: 'Player Team' });
@@ -39,7 +36,6 @@ function App() {
   const finishedRacersRef = useRef(new Set());
   const finishTimesRef = useRef({});
   const tournamentData = useRef(null);
-  const audioRef = useRef(null);
 
   const gameStateRef = useRef(gameState);
   useEffect(() => {
@@ -47,35 +43,6 @@ function App() {
   }, [gameState]);
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
-
-  const handleStartGame = () => {
-    if (!isAudioRequested) {
-      setIsAudioRequested(true);
-    }
-    setGameState(GAME_STATE.PLAYER_SETUP);
-  };
-
-  const handleAudioToggle = () => {
-    setIsAudioEnabled(prevState => !prevState);
-  };
-
-  useEffect(() => {
-    if (isAudioRequested && !audioRef.current) {
-      audioRef.current = new Audio('/f1.mp3');
-      audioRef.current.loop = true;
-      audioRef.current.volume = 0.25;
-    }
-    if (audioRef.current) {
-      if (isAudioEnabled) {
-        audioRef.current.play().catch(error => console.error("Audio playback error:", error));
-      } else {
-        audioRef.current.pause();
-      }
-    }
-    return () => {
-      if (audioRef.current) audioRef.current.pause();
-    };
-  }, [isAudioRequested, isAudioEnabled]);
 
   const startRace = useCallback((track) => {
     selectedTrackRef.current = track;
@@ -306,7 +273,7 @@ function App() {
     const player = racersRef.current.find(r => r.isPlayer);
     const bots = racersRef.current.filter(r => !r.isPlayer);
     switch (gameState) {
-      case GAME_STATE.MENU: return <StartMenu onPlay={handleStartGame} />;
+      case GAME_STATE.MENU: return <StartMenu onPlay={() => setGameState(GAME_STATE.PLAYER_SETUP)} />;
       case GAME_STATE.PLAYER_SETUP: return <PlayerSetup onSetupComplete={handlePlayerSetupComplete} onBack={handleMenu} />;
       case GAME_STATE.MODE_SELECTION: return <ModeSelection onSelect={handleModeSelect} onBack={() => setGameState(GAME_STATE.PLAYER_SETUP)} />;
       case GAME_STATE.TOURNAMENT_SETUP: return <TournamentSetup onSelect={handleTournamentSetup} onBack={() => setGameState(GAME_STATE.MODE_SELECTION)} />;
@@ -337,7 +304,6 @@ function App() {
   return (
     <>
       <AnimatedBackground />
-      {isAudioRequested && <AudioToggle isAudioEnabled={isAudioEnabled} onToggle={handleAudioToggle} />}
       <div className="game-wrapper">{renderContent()}</div>
     </>
   );
